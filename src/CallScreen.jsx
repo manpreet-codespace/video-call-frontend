@@ -245,6 +245,13 @@ const CallScreen = ({ endCall, roomId, joinLink }) => {
             setStatus('Someone joined this call link');
         };
 
+        const handleRoomState = ({ participantCount }) => {
+            if (participantCount > 1) {
+                setPeerAvailable(true);
+                setStatus('Someone joined this call link');
+            }
+        };
+
         const handleOffer = ({ offer }) => {
             pendingOfferRef.current = offer;
             setIncomingCall(true);
@@ -285,6 +292,7 @@ const CallScreen = ({ endCall, roomId, joinLink }) => {
             endCall();
         };
 
+        socket.on('room-state', handleRoomState);
         socket.on('participant-joined', handleParticipantJoined);
         socket.on('offer', handleOffer);
         socket.on('answer', handleAnswer);
@@ -292,6 +300,7 @@ const CallScreen = ({ endCall, roomId, joinLink }) => {
         socket.on('call-ended', handleRemoteEndCall);
 
         return () => {
+            socket.off('room-state', handleRoomState);
             socket.off('participant-joined', handleParticipantJoined);
             socket.off('offer', handleOffer);
             socket.off('answer', handleAnswer);
