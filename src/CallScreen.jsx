@@ -293,12 +293,19 @@ const CallScreen = ({ endCall, roomId, joinLink }) => {
             endCall();
         };
 
+        const handleParticipantLeft = () => {
+            stopStream();
+            resetCallUi('The other person left the call');
+            endCall();
+        };
+
         socket.on('room-state', handleRoomState);
         socket.on('participant-joined', handleParticipantJoined);
         socket.on('offer', handleOffer);
         socket.on('answer', handleAnswer);
         socket.on('ice-candidate', handleIceCandidate);
         socket.on('call-ended', handleRemoteEndCall);
+        socket.on('participant-left', handleParticipantLeft);
 
         return () => {
             socket.off('room-state', handleRoomState);
@@ -307,6 +314,7 @@ const CallScreen = ({ endCall, roomId, joinLink }) => {
             socket.off('answer', handleAnswer);
             socket.off('ice-candidate', handleIceCandidate);
             socket.off('call-ended', handleRemoteEndCall);
+            socket.off('participant-left', handleParticipantLeft);
             socket.emit('leave-call', { roomId });
             stopStream();
         };
