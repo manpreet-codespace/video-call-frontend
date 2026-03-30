@@ -23,6 +23,7 @@ const CallScreen = ({ endCall, roomId, joinLink }) => {
     const [isCalling, setIsCalling] = useState(false);
     const [isInActiveCall, setIsInActiveCall] = useState(false);
     const [peerAvailable, setPeerAvailable] = useState(false);
+    const [canStartCall, setCanStartCall] = useState(false);
     const [status, setStatus] = useState('Waiting for someone to join this link');
     const [isMuted, setIsMuted] = useState(false);
     const [isPipActive, setIsPipActive] = useState(false);
@@ -246,11 +247,22 @@ const CallScreen = ({ endCall, roomId, joinLink }) => {
             setStatus('Someone joined this call link');
         };
 
-        const handleRoomState = ({ participantCount }) => {
+        const handleRoomState = ({ participantCount, isInitiator }) => {
+            setCanStartCall(Boolean(isInitiator));
+
             if (participantCount > 1) {
-                setPeerAvailable(true);
-                setStatus('Someone joined this call link');
+                if (isInitiator) {
+                    setPeerAvailable(true);
+                    setStatus('Someone joined this call link');
+                } else {
+                    setPeerAvailable(false);
+                    setStatus('Waiting for the other person to start the call');
+                }
+                return;
             }
+
+            setPeerAvailable(false);
+            setStatus('Waiting for someone to join this link');
         };
 
         const handleOffer = ({ offer }) => {
@@ -511,7 +523,7 @@ const CallScreen = ({ endCall, roomId, joinLink }) => {
             <div className='mt-6 flex flex-wrap gap-3'>
                 <button
                     className='bg-green-600 text-white p-3 rounded-lg disabled:opacity-50'
-                    disabled={!peerAvailable || incomingCall || isCalling || isInActiveCall}
+                    disabled={!canStartCall || !peerAvailable || incomingCall || isCalling || isInActiveCall}
                     onClick={handleStartCall}
                 >
                     Start Call
